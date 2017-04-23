@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="myJobBean" class="com.ltchen.scheduler.demo.quartz.MyJobBean">
+		<property name="jobName" value="myJobBean" />
+	</bean>
+	<!-- 创建调度任务类,可直接调用某类的某方法 -->
+	<bean id="simpleJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="myJobBean" />
+		<property name="targetMethod" value="sayHello" />
+	</bean>
+	<!-- 创建simple触发器,实现与java.util.Timer近似的调度,即隔一定时间间隔调用 -->
+	<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="simpleJobDetail" />
+		<property name="startDelay" value="1000" />
+		<property name="repeatInterval" value="5000" />
+	</bean>
+
+	<bean id="myQuartzJobBean.MyJobBean" class="com.ltchen.scheduler.demo.quartz.MyJobBean">
+		<property name="jobName" value="myQuartzJobBean.MyJobBean" />
+	</bean>
+	<!-- 创建调度任务类,调度的类需要继承QuartzJobBean,实现executeInternal方法.可为调度的类实例注入属性值 -->
+	<bean name="complexJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass" value="com.ltchen.scheduler.demo.quartz.MyQuartzJobBean" />
+		<property name="jobDataMap">
+			<map>
+				<entry key="jobName" value="myQuartzJobBean" />
+				<entry key="myJobBean" value-ref="myQuartzJobBean.MyJobBean" />
+			</map>
+		</property>
+		<property name="durability" value="true" />
+	</bean>
+	<!-- 创建simple触发器,实现与linux自带crond服务近似的调度,即实用cron表达式定义调度时间 -->
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="complexJobDetail" />
+		<property name="cronExpression" value="0 */1 * * * ? *" />
+	</bean>
+
+	<!-- 创建调度器,将 jobDetail和trigger绑定调用 -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="jobDetails">
+			<list>
+				<ref bean="simpleJobDetail" />
+				<ref bean="complexJobDetail" />
+			</list>
+		</property>
+		<property name="triggers">
+			<list>
+				<ref bean="simpleTrigger" />
+				<ref bean="cronTrigger" />
+			</list>
+		</property>
+	</bean>
+</beans>

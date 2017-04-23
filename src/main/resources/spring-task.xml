@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+     	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+	<!-- MyTaskJobOne采用配置的方式 -->
+	<bean id="myTaskJobOne" class="com.ltchen.scheduler.demo.task.MyTaskJobOne">
+		<property name="jobName" value="myTaskJobOne" />
+	</bean>
+	<task:scheduled-tasks>   
+        <task:scheduled ref="myTaskJobOne" method="sayHello" cron="*/5 * * * * ?"/>   
+	</task:scheduled-tasks>
+	
+	<!-- MyTaskJobTne采用注解的方式 -->
+	<!-- 扫描带注解的bean -->
+	<context:component-scan base-package="com.ltchen.scheduler.demo.task" />  
+	<!-- 开启这个配置,spring才能识别@Scheduled注解 -->
+	<task:annotation-driven scheduler="taskScheduler" mode="proxy"/>
+	<!-- 配置调度池线程数--> 
+	<task:scheduler id="taskScheduler" pool-size="10"/>  
+</beans>
